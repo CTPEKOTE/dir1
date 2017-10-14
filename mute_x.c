@@ -1,8 +1,7 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <math.h>
+#include <stdlib.h>
 #define TASK_N 100
 #define THREAD_N 10
 
@@ -23,12 +22,10 @@ task_t tasks[TASK_N];
 
 void* my_thread(void* var){
 	int frag = 0, k = 0;
-	//long long unsigned worker = *((pthread_t*)(var + 8 + sizeof(statuses)));
 	while(k <= TASK_N){
 		task_t *copy = (task_t*)var;
 		pthread_mutex_lock(&lock);
-		while(copy[k].status != NEW /*&& k < TASK_N*/){
-			//copy += sizeof(task_t);
+		while(copy[k].status != NEW ){
 			k++;
 		}
 
