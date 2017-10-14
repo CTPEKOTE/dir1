@@ -22,35 +22,35 @@ pthread_mutex_t lock;
 task_t tasks[TASK_N];
 
 void* my_thread(void* var){
-	int frag = 0, k = *((int*)(var + 4));
-	long long unsigned worker = *((pthread_t*)(var + 8 + sizeof(statuses)));
+	int frag = 0, k = 0;
+	//long long unsigned worker = *((pthread_t*)(var + 8 + sizeof(statuses)));
 	while(k <= TASK_N){
-
+		task_t *copy = (task_t*)var;
 		pthread_mutex_lock(&lock);
-		while((*(statuses*)(var + 8)) != NEW /*&& k < TASK_N*/){
-			var += sizeof(task_t);
+		while(copy[k].status != NEW /*&& k < TASK_N*/){
+			//copy += sizeof(task_t);
 			k++;
 		}
 
-		*((statuses*)(var + 8)) = PROCESSING;
+		copy[k].status = PROCESSING;
 		
 		pthread_mutex_unlock(&lock);
 		if (k >= TASK_N){
 
 			break;
 		}
-		printf("Task No %d is putting thread No %llu to sleep for %d mks\n",*((int*)(var + 4)), worker, *((int*)var));
+		printf("Task No %d is putting thread to sleep for %d mks\n",copy[k].id, copy[k].duration);
 		
-		usleep(*((int*)var));
+		usleep(copy[k].duration);
 		frag++;
 
 		pthread_mutex_lock(&lock);
-		*((statuses*)(var + 8)) = DONE;
+		copy[k].status = DONE;
 		pthread_mutex_unlock(&lock);
 
 
 	}
-	printf("Worker No %llu has fragged %d tasks\n",worker,frag);
+	printf("Worker has fragged %d tasks\n",frag);
 	return NULL;
 }
 int main(){
@@ -64,10 +64,10 @@ int main(){
 	}
 
 	for (i = 0; i < THREAD_N; i++){
-		pthread_create(&(tasks[i].worker), NULL, my_thread, (void*)(&(tasks[i])));
+		pthread_create(&(thread_id[i]), NULL, my_thread, (void*)(tasks));
 	}
 	for(i = 0; i < THREAD_N; i++){
-		pthread_join(tasks[i].worker,NULL);
+		pthread_join(thread_id[i],NULL);
 	}
 
 	printf("END\n");
