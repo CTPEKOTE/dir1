@@ -40,10 +40,8 @@ void* my_thread(void* var){
 		
 		usleep(copy[k].duration);
 		frag++;
-
-		pthread_mutex_lock(&lock);
+		
 		copy[k].status = DONE;
-		pthread_mutex_unlock(&lock);
 
 
 	}
