@@ -40,23 +40,43 @@ void* receiver(void* x){//autorefresh needed
 		}
 	}
 	//termios is kicking in! terminals are melting!
+	int j;
 	while(1){
-		if(i = recv(arg -> fd ,locstory, 1000 , 0) < 0){
+		if((i = recv(arg -> fd ,locstory, 1000 , 0)) < 0){
 			die("Can't read server message");
 		}
-		if(strlen(locstory) > 1){
+		//printf("%s\n", locstory);
+		//printf("i is %d\n",i);
+		if(i != 0){
 			strcpy(arg -> story , locstory);
 		}
 		
 
-		sleep(5);
+		//sleep(5);
 	}
 }
+struct printarg{
+	char *story, *messagec;
+	int *i;
+};
 void clear(void){
 	char *arg[] = {"clear",NULL};
 	execvp(arg[0],arg);
 	return ;
 }
+void* printer (void *x){
+	struct printarg *arg = (struct printarg*)x;
+	while(1){
+		if(fork() == 0){
+			clear();
+		}
+		wait(NULL);
+		printf("%s\n---------------------------------------------------------------\n%s\n%d\n",arg->story , arg->messagec, *arg->i);
+		sleep(1);
+	}
+	return NULL;
+}
+
 int main(int argc, char *argv[]) {
 	int sockfd;
 	
@@ -107,7 +127,7 @@ int main(int argc, char *argv[]) {
 	//settings.c_cc[VMIN] = 1;
 	//settings.c_cc[VTIME] = 0;
 	tcsetattr(STDIN_FILENO, TCSANOW ,  &settings);
-	sleep(10);
+	sleep(1);
 	printf("%s\n", message);
 	while(pass == 0){
 		
@@ -126,8 +146,10 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			case 127:{
-				messagec[strlen(messagec) - 1] = '\0';
-				i--;
+				if(i > 0){
+					messagec[strlen(messagec) - 1] = '\0';
+					i--;
+				}
 				break;
 			}
 			default:{
@@ -146,8 +168,15 @@ int main(int argc, char *argv[]) {
 		
 	}
 	//i = 0;
+	pthread_t thread_id2;
+	struct printarg dat;
+	dat.story = story;
+	dat.messagec = messagec;
+	dat.i = &i;
+	pthread_create(&thread_id2 , NULL , printer , (void*)&dat);
+	FILE *log;
 	
-	while(1){
+	while(1){//communication through memory, change name/password format , create function for getcharswitch, problem with zero password , end of space for clients.
 		//scanf("%s", message);
 		//fgets(message , 100 , stdin);
 		
@@ -174,6 +203,7 @@ int main(int argc, char *argv[]) {
 			default:{
 				messagec[i] = a;
 				i++;
+				messagec[i] = '\0';
 				break;
 			}
 

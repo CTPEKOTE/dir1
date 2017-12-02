@@ -57,20 +57,20 @@ void* retranslator(void *x){//retranslator send last 1000 chars from servstory f
 			rewind(servstory);
 		}
 		//fscanf(servstory , "%s" , list -> msgstory);
-		fgets(list -> msgstory , 1001 , servstory);
-		while(fgets(message , 1001 , servstory) != '\0'){
+		fgets(list -> msgstory , 1000 , servstory);
+		while(fgets(message , 1000 , servstory) != '\0'){
 			strcat(list -> msgstory , message);
 		}
 		fclose(servstory);
 		//printf("%s\n", list -> msgstory);
 
 		for(int i = 0; i < *(list -> clinum) ; i++){
-			if (send((list ->sock)[i], list -> msgstory, 1001 , MSG_CONFIRM) < 0) {
+			if (send((list ->sock)[i], list -> msgstory, 1000 , MSG_CONFIRM) < 0) {
 				die("can't send msgstory\n");
 			}
 		}
 
-		sleep(10);
+		sleep(1);
 	}
 }
 
